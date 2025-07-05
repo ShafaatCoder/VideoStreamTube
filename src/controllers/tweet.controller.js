@@ -1,5 +1,5 @@
 import { isValidObjectId } from "mongoose";
-import { Tweet } from "../models/tweet.model.js";
+import { Tweet } from "../models/tweet.models.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 

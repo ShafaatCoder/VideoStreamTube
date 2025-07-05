@@ -3,6 +3,7 @@ import {
   changeUserPassword,
   getCurrentUser,
   getUserChannelProfile,
+  getuserwatchHistory,
   loginUser,
   logoutUser,
   refreshAccessToken,
@@ -36,7 +37,7 @@ router.route("/refresh-token").post(refreshAccessToken);
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/change-password").post(verifyJWT, changeUserPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
-router.route("/c/username").get(verifyJWT, getUserChannelProfile);
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
 router
   .route("/avatar")
