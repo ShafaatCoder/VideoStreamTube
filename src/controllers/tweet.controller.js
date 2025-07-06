@@ -5,17 +5,22 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
-  const userId = req.user.id;
+  const owner = req.user._id; // OR req.user.id based on your auth
 
   if (!content || content.trim() === "") {
     return res.status(400).json({ message: "Content is required" });
   }
 
-  const tweet = await Tweet.create({ content, userId });
+  const tweet = await Tweet.create({ content, owner });
+
+  const populatedTweet = await Tweet.findById(tweet._id).populate(
+    "owner",
+    "username"
+  );
 
   res.status(201).json({
     message: "Tweet created successfully",
-    tweet,
+    tweet: populatedTweet,
   });
 });
 
@@ -26,7 +31,10 @@ const getUserTweets = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid user ID");
   }
 
-  const tweets = await Tweet.find({ userId }).populate("userId", "username");
+  const tweets = await Tweet.find({ owner: userId }).populate(
+    "owner",
+    "username"
+  );
 
   res.status(200).json({
     message: "User tweets fetched successfully",
@@ -63,7 +71,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
   if (!isValidObjectId(tweetId)) {
     throw new ApiError(400, "Invalid tweet ID");
   }
-  const tweet = await Tweet.findByIdAndUpdate(
+  const tweet = await Tweet.findByIdAndDelete(
     tweetId,
     { isDeleted: true },
     { new: true }

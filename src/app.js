@@ -20,12 +20,14 @@ app.use(express.static("public"));
 app.use(cookieParser());
 //routes
 import healthcheckRoutes from "./routes/healthcheck.routes.js";
+import likeRoutes from "./routes/like.routes.js";
 import tweetRoutes from "./routes/tweet.routes.js";
 import userRoutes from "./routes/user.routes.js";
 
 app.use("/api/v1/healthcheck", healthcheckRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/tweet", tweetRoutes);
+app.use("/api/v1", likeRoutes);
 
 // app.use(errorHandler)
 export { app };
