@@ -1,5 +1,6 @@
 // src/controllers/video.controller.js
 
+import { isValidObjectId } from "mongoose";
 import { Video } from "../models/video.models.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -21,13 +22,14 @@ const uploadVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video and Thumbnail are required");
   }
 
-  // ✅ Get duration BEFORE uploading and deleting local file
-  const duration = await getVideoDuration(videoFilePath);
-  if (!duration) {
+  let duration;
+  try {
+    duration = await getVideoDuration(videoFilePath);
+    duration = Math.floor(duration);
+  } catch (error) {
     throw new ApiError(500, "Could not extract video duration");
   }
 
-  // ✅ Upload to Cloudinary
   const uploadedVideo = await uploadOnCloudinary(videoFilePath, "video");
   const uploadedThumbnail = await uploadOnCloudinary(thumbnailPath, "image");
 
@@ -44,12 +46,91 @@ const uploadVideo = asyncHandler(async (req, res) => {
     duration,
   });
 
+  // Clean up temp files (optional)
+  import("fs/promises").then((fs) => {
+    fs.unlink(videoFilePath).catch(() => {});
+    fs.unlink(thumbnailPath).catch(() => {});
+  });
+
   return res.status(200).json({
     message: "Video uploaded successfully!",
     video: newVideo,
   });
 });
 
+const getVideoById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Find video by ID and populate owner details if needed
+  const video = await Video.findById(id).populate("owner", "username email");
+
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  return res.status(200).json({
+    message: "Video fetched successfully!",
+    video,
+  });
+});
+
+const updateVideo = asyncHandler(async (req, res) => {
+  const { id: videoId } = req.params;
+  const { title, description } = req.body;
+
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid Video ID");
+  }
+
+  const video = await Video.findById(videoId);
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  // ✅ Update text fields
+  if (title) video.title = title;
+  if (description) video.description = description;
+
+  // ✅ Handle thumbnail file upload
+  if (req.file) {
+    const uploadedThumbnail = await uploadOnCloudinary(req.file.path, "image");
+    if (!uploadedThumbnail?.url) {
+      throw new ApiError(500, "Failed to upload new thumbnail");
+    }
+    video.thumbnail = uploadedThumbnail.url;
+  }
+
+  await video.save();
+
+  return res.status(200).json({
+    message: "Video updated successfully!",
+    video,
+  });
+});
+
+const deleteVideo = asyncHandler(async (req, res) => {
+  const { id: videoId } = req.params;
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "invalid video id");
+  }
+  const video = await Video.findByIdAndDelete(
+    videoId,
+    { isDeleted: true },
+    { new: true }
+  );
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+  res.status(200).json({
+    message: "Video Deleted Successfully",
+    video,
+  });
+});
+
 export const videoController = {
   uploadVideo,
+  getVideoById,
+  updateVideo,
+  deleteVideo,
 };
+// ...existing code...

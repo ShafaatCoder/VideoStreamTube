@@ -5,6 +5,10 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 const router = Router();
 router.use(verifyJWT);
 
-router.route("/like/:videoId").patch(verifyJWT, likeController.toggleVideoLike);
-router.route("/like/:tweetId").patch(verifyJWT, likeController.toggleTweetLike);
+router.route("/like/video/:videoId").patch(likeController.toggleVideoLike);
+router.route("/like/tweet/:tweetId").patch(likeController.toggleTweetLike);
+router
+  .route("/like/comment/:commentId")
+  .patch(likeController.toggleCommentLike);
+
 export default router;

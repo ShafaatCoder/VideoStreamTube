@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 //routes
+import commentRoutes from "./routes/comment.routes.js";
 import healthcheckRoutes from "./routes/healthcheck.routes.js";
 import likeRoutes from "./routes/like.routes.js";
 import tweetRoutes from "./routes/tweet.routes.js";
@@ -30,6 +31,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/tweet", tweetRoutes);
 app.use("/api/v1", likeRoutes);
 app.use("/api/v1", videoRoutes);
+app.use("/api/v1", commentRoutes);
 
 // app.use(errorHandler)
 export { app };

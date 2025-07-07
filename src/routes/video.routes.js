@@ -15,4 +15,11 @@ router.route("/video/upload-a-video").post(
   videoController.uploadVideo
 );
 
+router.route("/video/:id").get(verifyJWT, videoController.getVideoById);
+router
+  .route("/video/update-video/:id")
+  .patch(verifyJWT, upload.single("thumbnail"), videoController.updateVideo);
+router
+  .route("/video/delete-video/:id")
+  .delete(verifyJWT, videoController.deleteVideo);
 export default router;

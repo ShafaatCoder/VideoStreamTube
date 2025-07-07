@@ -1,4 +1,5 @@
 import { isValidObjectId } from "mongoose";
+import { Comment } from "../models/comment.models.js";
 import { Like } from "../models/like.models.js";
 import { Tweet } from "../models/tweet.models.js";
 import { Video } from "../models/video.models.js";
@@ -78,7 +79,43 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
   });
 });
 
+const toggleCommentLike = asyncHandler(async (req, res) => {
+  const { commentId } = req.params;
+  const userId = req.user._id;
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(400, "Invalid Comment ID");
+  }
+
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(404, "Comment not found");
+  }
+
+  const existingLike = await Like.findOne({
+    comment: commentId,
+    likedBy: userId,
+  });
+
+  if (existingLike) {
+    await existingLike.deleteOne();
+  } else {
+    await Like.create({
+      comment: commentId,
+      likedBy: userId,
+    });
+  }
+
+  const likeCount = await Like.countDocuments({ comment: commentId });
+
+  return res.status(200).json({
+    message: existingLike ? "Comment unliked" : "Comment liked",
+    likeCount,
+  });
+});
+
 export const likeController = {
   toggleVideoLike,
   toggleTweetLike,
+  toggleCommentLike,
 };
