@@ -22,6 +22,8 @@ app.use(cookieParser());
 import commentRoutes from "./routes/comment.routes.js";
 import healthcheckRoutes from "./routes/healthcheck.routes.js";
 import likeRoutes from "./routes/like.routes.js";
+import playlistRoutes from "./routes/playlist.routes.js";
+import subscriptionRoutes from "./routes/subscription.routes.js";
 import tweetRoutes from "./routes/tweet.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import videoRoutes from "./routes/video.routes.js";
@@ -32,6 +34,8 @@ app.use("/api/v1/tweet", tweetRoutes);
 app.use("/api/v1", likeRoutes);
 app.use("/api/v1", videoRoutes);
 app.use("/api/v1", commentRoutes);
+app.use("/api/v1", subscriptionRoutes);
+app.use("/api/v1", playlistRoutes);
 
 // app.use(errorHandler)
 export { app };
