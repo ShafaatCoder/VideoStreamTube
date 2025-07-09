@@ -52,6 +52,11 @@ const videoSchema = new Schema(
     timestamps: true,
   }
 );
+videoSchema.post("findOneAndDelete", async function (doc) {
+  if (doc?._id) {
+    await Like.deleteMany({ video: doc._id });
+  }
+});
 
 videoSchema.plugin(mongooseAggregatePaginate);
 

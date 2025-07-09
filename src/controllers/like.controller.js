@@ -114,8 +114,54 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   });
 });
 
+import { ApiResponse } from "../utils/ApiResponse.js";
+
+const getLikedVideos = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  // Step 1: Get all liked videos for this user
+  const likes = await Like.find({ likedBy: userId, video: { $exists: true } })
+    .populate({
+      path: "video",
+      populate: {
+        path: "owner",
+        select: "username email",
+      },
+    })
+    .skip((pageNum - 1) * limitNum)
+    .limit(limitNum)
+    .sort({ createdAt: -1 });
+
+  // Step 2: Filter out cases where video is deleted
+  const likedVideos = likes
+    .map((like) => like.video)
+    .filter((video) => video !== null); // skip deleted videos
+
+  const totalLikes = await Like.countDocuments({
+    likedBy: userId,
+    video: { $exists: true },
+  });
+
+  return res.status(200).json(
+    new ApiResponse({
+      message: "Liked videos fetched successfully",
+      data: {
+        likedVideos,
+        totalLikes,
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalLikes / limitNum),
+      },
+    })
+  );
+});
+
 export const likeController = {
   toggleVideoLike,
   toggleTweetLike,
   toggleCommentLike,
+  getLikedVideos,
 };

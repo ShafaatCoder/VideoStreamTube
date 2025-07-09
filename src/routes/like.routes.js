@@ -10,5 +10,5 @@ router.route("/like/tweet/:tweetId").patch(likeController.toggleTweetLike);
 router
   .route("/like/comment/:commentId")
   .patch(likeController.toggleCommentLike);
-
+router.route("/like/liked-videos").get(likeController.getLikedVideos);
 export default router;

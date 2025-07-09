@@ -6,6 +6,8 @@ import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 router.use(verifyJWT);
 
+router.route("/video/all-videos").get(verifyJWT, videoController.getAllVideos);
+
 router.route("/video/upload-a-video").post(
   verifyJWT,
   upload.fields([
@@ -22,4 +24,8 @@ router
 router
   .route("/video/delete-video/:id")
   .delete(verifyJWT, videoController.deleteVideo);
+
+router
+  .route("/video/toggle-publish/:videoId")
+  .patch(verifyJWT, videoController.togglePublishStatus);
 export default router;
